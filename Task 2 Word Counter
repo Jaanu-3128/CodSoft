@@ -1,1 +1,71 @@
-Java
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+
+public class Main {
+    private static final Set<String> COMMON_WORDS = new HashSet<>(Arrays.asList(
+            "the", "and", "or", "but", "of", "to", "a", "an", "in", "on", "at", "for", "with", "by", "is", "are", "were",
+            "was", "am", "be", "been", "being", "this", "that", "these", "those", "he", "she", "it", "they", "we", "you",
+            "I", "me", "my", "mine", "your", "yours", "his", "her", "hers", "its", "our", "ours", "their", "theirs"));
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String text = "";
+
+        while (text.isEmpty()) {
+            System.out.println("Enter the text or provide a file path to count the number of words:");
+            String str = sc.nextLine().trim();
+
+            if (str.startsWith("file:")) {
+                text = readFromFile(str.substring(5)); 
+            } else {
+                text = str;
+            }
+
+            if (text.isEmpty()) {
+                System.out.println("Invalid input. Please enter text or  provide a valid file path.");
+            }
+        }
+
+        String[] words = text.split("[\\s\\p{Punct}]+"); 
+        List<String> filteredWords = filterCommonWords(words);
+
+        int wordCount = filteredWords.size();
+        System.out.println("Total words (excluding common words): " + wordCount);
+
+        Map<String, Integer> wordFrequencies = calculateWordFrequencies(filteredWords);
+        System.out.println("Unique words and their frequencies:");
+        wordFrequencies.forEach((word, frequency) -> System.out.println(word + ": " + frequency));
+    }
+
+    private static String readFromFile(String filePath) {
+        StringBuilder content = new StringBuilder();
+        try (Scanner fileScanner = new Scanner(new File(filePath))) {
+            while (fileScanner.hasNextLine()) {
+                content.append(fileScanner.nextLine()).append("\n");
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. Using empty text.");
+        }
+        return content.toString();
+    }
+
+    private static List<String> filterCommonWords(String[] words) {
+        List<String> filteredWords = new ArrayList<>();
+        for (String word : words) {
+            String cleanWord = word.toLowerCase();
+            if (!COMMON_WORDS.contains(cleanWord)) {
+                filteredWords.add(cleanWord);
+            }
+        }
+        return filteredWords;
+    }
+
+    private static Map<String, Integer> calculateWordFrequencies(List<String> words) {
+        Map<String, Integer> wordFrequencies = new HashMap<>();
+        for (String word : words) {
+            wordFrequencies.put(word, wordFrequencies.getOrDefault(word, 0) + 1);
+        }
+        return wordFrequencies;
+    }
+}
